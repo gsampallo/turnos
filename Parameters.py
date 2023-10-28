@@ -16,3 +16,7 @@ class Parameters:
         with open(self.__file_config) as json_file:
             data = json.load(json_file)
             self.database = data["database"]
+            self.logFolder = data["logFolder"]
+    
+    def get_log_folder(self):
+        return self.logFolder

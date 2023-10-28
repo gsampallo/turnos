@@ -3,7 +3,25 @@ import time
 import re
 import datetime
 import TurnoService
-import io
+from Log import Log
+import os
+
+lastname = os.environ.get('LASTNAME')
+channel = os.environ.get('CHANNEL')
+sandbox = os.getenv("SANDBOX", 'False').lower() in ('true', '1', 't')
+
+log = Log()
+
+if lastname == None or channel == None:
+    message = "Can't find environment variables"
+    log.log(message)
+    print(message)
+    exit()
+
+if sandbox == None or not sandbox:
+    log.log("SANDBOX not set or set as False")
+    sandbox = False
+
 
 
 def get_date_and_time(text):
@@ -58,9 +76,11 @@ def print_turns(turno):
 
 
 def enviarNotificacion(message):
+    if not sandbox:
+        print("Don't send notifcation, sandbox = True")
     print("Se dispara notificacion")
     import requests
-    requests.post("https://ntfy.sh/",data=message.encode(encoding='utf-8'))
+    requests.post("https://ntfy.sh/"+channel,data=message.encode(encoding='utf-8'))
 
 def getTurnos():
     turnos = []
@@ -71,9 +91,9 @@ def getTurnos():
 
     # 2
     form = login_html.select("form")[0]
-    form.select("input")[0]["value"] = ""
+    form.select("input")[0]["value"] = lastname
 
-    time.sleep(2)
+    time.sleep(1)
 
     # 3
     profiles_page = browser.submit(form, login_page.url)
@@ -101,9 +121,11 @@ for t in turnos:
     if existe == None:
         TurnoService.saveTurnos(t1)
         print(f"Turno Guardado: {print_turns(t1)}")
+        log.log(f"Turno Guardado: {print_turns(t1)}")
         message += print_turns(t1)+"\n"
     else:
         print(f"Turno existente: {print_turns(t1)}")
+        log.log(f"Turno existente: {print_turns(t1)}")
     
 if len(message) > 0:
     enviarNotificacion(message)
