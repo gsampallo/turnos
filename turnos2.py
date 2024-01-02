@@ -109,7 +109,9 @@ def getTurnos():
     while i < max:
         turnos.append(items[i].text)
         i += 1
-    turnosN = list(filter(lambda x: x.find("/2023") > 0, turnos))
+    today = datetime.datetime.now()
+    year = f"/{2024}"
+    turnosN = list(filter(lambda x: x.find(year) > 0, turnos))
 
     return turnosN
 
